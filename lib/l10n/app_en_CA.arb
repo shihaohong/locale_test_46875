@@ -1,0 +1,20 @@
+{
+  "@@locale": "en_CA",
+
+  "helloWorld": "Hello, Canadian World",
+  "@helloWorld": {
+    "description": "The conventional newborn programmer greeting"
+  },
+
+  "helloCost": "Hello for Canadian {price} {value}",
+  "@helloCost": {
+    "description": "A message with string and int (currency) parameters",
+    "placeholders": {
+      "price": {},
+      "value": {
+        "type": "int",
+        "format": "currency"
+      }
+    }
+  }
+}

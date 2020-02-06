@@ -1,146 +1,64 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 
-import 'package:intl/intl.dart';
-import 'package:intl/message_lookup_by_library.dart';
-import 'package:intl/src/intl_helpers.dart';
+import 'l10n/app_localizations.dart';
 
-import 'messages_en.dart' as messages_en;
-import 'messages_es.dart' as messages_es;
-
-void main() => runApp(new MyApp());
-
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      localizationsDelegates: [
-        AppLocalizationsDelegate(),
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate
+    try {
+      print('get localizations');
+      final AppLocalizations localizations = AppLocalizations.of(context);
+      print('localizations: $localizations');
+      print('localizations.helloWorld');
+      final List<String> results = <String>[
+        '${localizations.helloWorld}',
+        '${localizations.hello("World")}',
+        '${localizations.greeting("Hello", "World")}',
+        '${localizations.helloWorldOn(DateTime(1960))}',
+        '${localizations.helloOn("world argument", DateTime(1960), DateTime(1960))}',
+        '${localizations.helloWorldDuring(DateTime(1960), DateTime(2020))}',
+        '${localizations.helloFor(123)}',
+        '${localizations.helloCost("price", 123)}',
+        '${localizations.helloWorlds(0)}',
+        '${localizations.helloWorlds(1)}',
+        '${localizations.helloWorlds(2)}',
+        '${localizations.helloWorldsOn(0, DateTime(1960))}',
+        '${localizations.helloWorldsOn(1, DateTime(1960))}',
+        '${localizations.helloWorldsOn(2, DateTime(1960))}',
+        '${localizations.helloAdjectiveWorlds(0, "new")}',
+        '${localizations.helloAdjectiveWorlds(1, "new")}',
+        '${localizations.helloAdjectiveWorlds(2, "new")}',
+        '${localizations.helloWorldPopulation(0, 100)}',
+        '${localizations.helloWorldPopulation(1, 101)}',
+        '${localizations.helloWorldPopulation(2, 102)}',
+        '${localizations.helloWorldInterpolation("Hello", "World")}',
+        '${localizations.helloWorldsInterpolation(123, "Hello", "World")}',
+      ];
+      int n = 0;
+      for (final String result in results) {
+        print('#l10n $n ($result)\n');
+        n += 1;
+      }
+    } finally {
+      print('#l10n END\n');
+    }
+    return MaterialApp(
+      home: Container(
+        color: Colors.blue,
+      )
+    );
+  }
+}
+
+void main() {
+  runApp(
+    MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: <Locale>[
+        Locale('en', 'CA'),
+        Locale('en'),
       ],
-      supportedLocales: [const Locale("en"), const Locale("es"), const Locale("fr")],
-      onGenerateTitle: (BuildContext context) =>
-      AppLocalizations.of(context).title,
-      theme: new ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: new MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context).title),
-      ),
-      body: Center(
-        child: Text(
-          AppLocalizations.of(context).hello,
-          style: Theme.of(context).textTheme.display1,
-        ),
-      ),
-    );
-  }
-}
-
-class AppLocalizations {
-  static Future<AppLocalizations> load(Locale locale) {
-    final String name =
-    locale.countryCode == null ? locale.languageCode : locale.toString();
-    final String localeName = Intl.canonicalizedLocale(name);
-
-    return initializeMessages(localeName).then((bool _) {
-      Intl.defaultLocale = localeName;
-      return new AppLocalizations();
-    });
-  }
-
-  static AppLocalizations of(BuildContext context) {
-    return Localizations.of<AppLocalizations>(context, AppLocalizations);
-  }
-
-  String get title {
-    return Intl.message('Hello world App',
-        name: 'title', desc: 'The application title');
-  }
-
-  String get hello {
-    return Intl.message('Hello', name: 'hello');
-  }
-}
-
-class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
-  const AppLocalizationsDelegate();
-
-  @override
-  bool isSupported(Locale locale) {
-    return ['en', 'es', 'fr'].contains(locale.languageCode);
-  }
-
-  @override
-  Future<AppLocalizations> load(Locale locale) {
-    return AppLocalizations.load(locale);
-  }
-
-  @override
-  bool shouldReload(LocalizationsDelegate<AppLocalizations> old) {
-    return false;
-  }
-}
-
-typedef Future<dynamic> LibraryLoader();
-Map<String, LibraryLoader> _deferredLibraries = {
-  'en': () => new Future.value(null),
-  'es': () => new Future.value(null),
-};
-
-MessageLookupByLibrary _findExact(String localeName) {
-  switch (localeName) {
-    case 'en':
-      return messages_en.messages;
-    case 'es':
-      return messages_es.messages;
-    default:
-      return null;
-  }
-}
-
-/// User programs should call this before using [localeName] for messages.
-Future<bool> initializeMessages(String localeName) async {
-  var availableLocale = Intl.verifiedLocale(
-    localeName,
-    (locale) => _deferredLibraries[locale] != null,
-    onFailure: (_) => null);
-  if (availableLocale == null) {
-    return new Future.value(false);
-  }
-  var lib = _deferredLibraries[availableLocale];
-  await (lib == null ? new Future.value(false) : lib());
-  initializeInternalMessageLookup(() => new CompositeMessageLookup());
-  messageLookup.addLocale(availableLocale, _findGeneratedMessagesFor);
-  return new Future.value(true);
-}
-
-bool _messagesExistFor(String locale) {
-  try {
-    return _findExact(locale) != null;
-  } catch (e) {
-    return false;
-  }
-}
-
-MessageLookupByLibrary _findGeneratedMessagesFor(String locale) {
-  var actualLocale = Intl.verifiedLocale(locale, _messagesExistFor,
-      onFailure: (_) => null);
-  if (actualLocale == null) return null;
-  return _findExact(actualLocale);
+      home: Home(),
+    ),
+  );
 }
